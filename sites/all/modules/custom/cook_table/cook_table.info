@@ -1,0 +1,8 @@
+name = Cook table billing
+description = Aplication software for billing
+core = 7.x
+project = "App"
+package = Billing
+
+files[] = includes/cook_table.controller.inc
+files[] = includes/cook_table.views_controller.inc

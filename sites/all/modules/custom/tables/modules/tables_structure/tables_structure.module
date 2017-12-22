@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Tables structure feature.
+ */
+
+include_once 'tables_structure.features.inc';

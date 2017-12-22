@@ -1,0 +1,165 @@
+<?php
+
+/**
+ * Implements hook_entity_info().
+ */
+function tables_entity_info() {
+   $return = array(
+      'tables' => array(
+      'label' => t('Tables'),
+      'controller class' => 'TablesController',
+      'base table' => 'tables',
+      'fieldable' => FALSE,
+      'entity keys' => array(
+        'id' => 'id',
+      ),
+      'views controller class' => 'TablesViewsController',
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full content'),
+          'custom settings' =>TRUE ,
+        ),
+      ),
+    ),
+  );
+  return $return;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function tables_menu() {
+  $items['tables/add'] = array(
+    'title' => 'Add tables',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tables_add_form', 2),
+    'access arguments' => array('table:*:add'),
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'includes/tables.page.inc',
+  );
+  $items['tables/edit/%tables'] = array(
+     'title' => 'Update table',
+     'access arguments' => array('tables:*:edit'),
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tables_add_form', 2),
+     'file' => 'includes/tables.page.inc',
+     'type' => MENU_LOCAL_ACTION,
+  );
+  $items['tables/delete/%tables'] = array(
+    'title' => t('Delete the table'),
+    'access arguments' => array('tables:*:delete'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tables_delete_form', 2),
+    'file' => 'includes/tables.page.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function tables_permission() {
+  return array(
+    'table:*:add' =>  array(
+      'title' => t('Add tables'),
+    ),
+    'tables:*:edit' => array(
+      'title' => t('Update table'),
+    ),
+    'tables:*:delete' => array(
+      'title' => t('Delete the table'),
+    ),
+  );
+}
+
+/**
+ * Implement hook_views_api
+ * @return array
+ */
+function tables_views_api()
+{
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'tables') . '/includes/views',
+  );
+}
+
+/**
+ * Implement check exit cook table
+ */
+function tables_get_tables($field, $value) {
+  $query = db_select('tables', 'd');
+  $query->fields('d');
+  $query->condition($field, $value, '=');
+  $result = $query->execute()->fetchAll();
+  if ($result) {
+    return $result;
+  } else {
+    return false;
+  }
+}
+
+function tables_create($entity)
+{
+  return entity_save('tables', $entity);
+}
+
+/**
+ * Implement cook tables Load Multiple.
+ * @Param $ids = array();
+ */
+function tables_load_multiple($ids) {
+  return entity_load('tables', $ids);
+}
+
+/**
+ * @param $id
+ * @return mixedImplement hook_entity_load
+ * tables_load
+ */
+function tables_load($id) {
+  $entity = tables_load_multiple(array($id));
+  return reset($entity);
+}
+
+/**
+ * Implements cook table Update.
+ */
+function tables_save($entity)
+{
+  return entity_save('tables', $entity);
+}
+
+/**
+ * @param $ids
+ * @param $conditions
+ * @return mixed
+ * Implements load cook table with condition
+ */
+function tables_load_multiple_with_conditions($ids, $conditions)
+{
+  return entity_load('tables', $ids, $conditions);
+}
+
+/**
+ * Implements order delete
+ */
+function tables_delete($id)
+{
+  return entity_delete('tables', $id);
+}
+
+/**
+ * Implement hook_page_alter
+ */
+/*function tables_page_alter(&$page){
+  if($_GET['q']=='app/tables/manager'){
+    $page['content']['add_tables'] = array(
+      '#weight' => 100,
+      '#markup' => ' <ul class="action-links"><li><a href="/tables/add">Thêm bàn</a></li></ul>',
+    );
+  }
+
+}*/

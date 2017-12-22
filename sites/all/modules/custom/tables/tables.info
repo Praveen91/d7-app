@@ -1,0 +1,7 @@
+name = Tables Billings
+description = Application software for billing
+core = 7.x
+package = Billing
+project = "App"
+files[] = includes/tables.controller.inc
+files[] = includes/tables.views_controller.inc

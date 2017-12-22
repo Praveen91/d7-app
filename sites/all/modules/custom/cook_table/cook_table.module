@@ -1,0 +1,160 @@
+<?php
+
+/**
+ * Implements hook_entity_info().
+ */
+function cook_table_entity_info() {
+
+   $return = array(
+    'cook_table' => array(
+      'label' => t('Cook Table'),
+      'controller class' => 'CookTableController',
+      'base table' => 'cook_table',
+      'fieldable' => FALSE,
+      'entity keys' => array(
+        'id' => 'id',
+      ),
+      'views controller class' => 'CookTableViewsController',
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full content'),
+          'custom settings' => TRUE,
+        ),
+      ),
+    ),
+  );
+  return $return;
+}
+
+/**
+ * Implements hook_menu().
+ * Add menu for cook_table.
+ */
+function cook_table_menu() {
+  $items['cook-table/add'] = array(
+    'title' => 'Add Menu',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cook_table_add_form', 2),
+    'access arguments' => array('cook_table:*:add'),
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'includes/cook_table.page.inc',
+  );
+
+  $items['cook-table/edit/%cook_table'] = array(
+    'title' => 'Update menu',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cook_table_add_form', 2),
+    'access arguments' => array('cook_table:*:edit'),
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'includes/cook_table.page.inc',
+  );
+
+   $items['cook-table/delete/%cook_table'] = array(
+    'title' => 'Delete menu',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cook_table_delete_form', 2),
+    'access arguments' => array('cook_table:*:delete'),
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'includes/cook_table.page.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function cook_table_permission() {
+  return array(
+    'cook_table:*:add' =>  array(
+      'title' => t('Add Cook Menu'),
+    ),
+    'cook_table:*:edit' =>  array(
+      'title' => t('Update menu'),
+    ),
+    'cook_table:*:delete' =>  array(
+      'title' => t('Delete menu'),
+    ),
+  );
+}
+
+/**
+ * Implement check exit cook table
+ */
+function cook_table_get_cook_table($field, $value) {
+    $query = db_select('cook_table', 'ct');
+    $query->fields('ct');
+    $query->condition($field, $value, '=');
+    $result = $query->execute()->fetchAll();
+    if ($result) {
+      return $result;
+    } else {
+      return false;
+    }
+}
+
+/**
+ * Implements cook table Cupdate
+ */
+function cook_table_create($entity) {
+  return entity_save('cook_table', $entity);
+}
+
+/**
+ * @param $id
+ * @return mixed
+ * Implement hook_entity_load().
+ * cook_table load
+ */
+
+function cook_table_load($id) {
+  $entity = cook_table_load_multiple(array($id));
+  return reset($entity);
+}
+
+/**
+ * Implements cook table Load Multiple.
+ * @param $ids = array();
+ */
+function cook_table_load_multiple($ids) {
+  return entity_load('cook_table', $ids);
+}
+
+/**
+ * @param $ids
+ * @param $conditions
+ * @return mixed
+ * Implements load cook table with condition
+ */
+function cook_table_load_multiple_with_conditions($ids, $conditions)
+{
+  return entity_load('cook_table', $ids, $conditions);
+}
+
+
+/**
+ * Implements cook table update.
+ */
+function cook_table_save($entity)
+{
+  return entity_save('cook_table', $entity);
+}
+
+/**
+ * Implements cook_table_delete.
+ */
+function cook_table_delete($id) {
+   return entity_delete('cook_table', $id);
+}
+
+/**
+ * Implement hook_views_api
+ * @return array
+ */
+function cook_table_views_api()
+{
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'cook_table') . '/includes/views',
+  );
+}
