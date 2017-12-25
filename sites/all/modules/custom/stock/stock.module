@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * Implements hook_entity_info().
+ */
+function stock_entity_info() {
+
+   $return = array(
+    'stock_out' => array(
+      'label' => t('Stock Out'),
+      'controller class' => 'StockOutController',
+      'base table' => 'stock_out',
+      'fieldable' => FALSE,
+      'entity keys' => array(
+        'id' => 'id',
+      ),
+      'views controller class' => 'StockOutViewsController',
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full Content'),
+          'custom settings' => TRUE,
+        ),
+      ),
+    ),
+  );
+
+   $return = array(
+    'stock_in' => array(
+      'label' => t('Stock In'),
+      'controller class' => 'StockInController',
+      'base table' => 'stock_in',
+      'fieldable' => FALSE,
+      'entity keys' => array(
+        'id' => 'id',
+      ),
+      'views controller class' => 'StockInViewsController',
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full Content'),
+          'custom settings' => TRUE,
+        ),
+      ),
+    ),
+  );
+
+  return $return;
+}
+
+
