@@ -1,0 +1,12 @@
+name = App Order Structure
+core = 7.x
+package = App
+version = 7.x-1.0-beta1
+dependencies[] = views
+dependencies[] = views_data_export
+features[ctools][] = views:views_default:3.0
+features[features_api][] = api:2
+features[views_view][] = debt_list
+features[views_view][] = order_list
+features_exclude[dependencies][ctools] = ctools
+project path = sites/all/modules/custom/order/modules

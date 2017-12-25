@@ -1,0 +1,136 @@
+<?php
+
+/**
+ * Implements hook_entity_info().
+ */
+function staff_entity_info() {
+
+    $return = array(
+      'staff' => array(
+      'label' => t('Staff'),
+      'controller class' => 'StaffController',
+      'base table' => 'staff',
+      'fieldable' => FALSE,
+      'entity keys' => array(
+        'id' => 'id',
+      ),
+      'views controller class' => 'StaffViewsController',
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full content'),
+          'custom settings' => TRUE,
+        ),
+      ),
+    ),
+  );
+  return $return;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function staff_menu() {
+  $items['staff/add'] = array(
+    'title' => 'Add Staff',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('staff_add_form', 2),
+    'access arguments' => array('staff:*:add'),
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'includes/staff.page.inc',
+  );
+  $items['staff/edit/%staff'] = array(
+   'title' => 'Update staff',
+   'page callback' => 'drupal_get_form',
+   'page arguments' => array('staff_add_form', 2),
+   'access arguments' => array('staff:*:edit'),
+   'type' => MENU_LOCAL_ACTION,
+   'file' => 'includes/staff.page.inc',
+  );
+  $items['staff/delete/%staff'] = array(
+   'title' => 'Delete staff',
+   'page callback' => 'drupal_get_form',
+   'page arguments' => array('staff_delete_form', 2),
+   'access arguments' => array('staff:*:delete'),
+   'type' => MENU_LOCAL_ACTION,
+   'file' => 'includes/staff.page.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function staff_permission() {
+  return array(
+    'staff:*:add' =>  array(
+      'title' => t('Add Staff'),
+    ),
+    'staff:*:edit' =>  array(
+      'title' => t('Update Staff'),
+    ),
+    'staff:*:delete' =>  array(
+      'title' => t('Delete Staff'),
+    ),
+  );
+}
+
+/**
+ * Implement staff create.
+ */
+function staff_create($entity) {
+  return entity_save('staff', $entity);
+}
+
+/**
+ * Implement staff update.
+ */
+function staff_save($entity) {
+  return entity_save('staff', $entity);
+}
+
+/**
+ * @param $id
+ * @return mixedImplement hook_entity_load
+ * Staff_load
+ */
+function staff_load($id)
+{
+  $entity = staff_load_multiple(array($id));
+  return reset($entity);
+}
+
+/**
+ * Implement staff load Multiple.
+ * @param $ids = array();
+ */
+function staff_load_multiple($ids) {
+  return entity_load('staff', $ids);
+}
+
+/**
+ * Implement Check exit staff name.
+ */
+function staff_get_staff($field, $value) {
+  $query = db_select('staff', 's');
+  $query->fields('s');
+  $query->condition($field, $value, '=');
+  $result = $query->execute()->fetchAll();
+  if ($result) {
+    return $result;
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Implement hook_views_api
+ * @return array
+ */
+function staff_views_api()
+{
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'staff') . '/includes/views',
+  );
+}

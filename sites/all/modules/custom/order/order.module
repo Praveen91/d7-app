@@ -1,0 +1,189 @@
+<?php
+
+/**
+ * Implement hook_entity
+ */
+
+function order_entity_info()
+{
+  return array(
+    'order' => array(
+      "label" => "Order",
+      "base table" => "orders",
+      'controller class' => 'OrderController',
+      "fieldable" => false,
+      'entity keys' => array(
+        'id' => 'id',
+      ),
+      'views controller class' => 'OrderViewsController',
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full content'),
+          'custom settings' => TRUE
+        )
+      )
+    )
+  );
+}
+
+/**
+ * Implements hook_menu().
+ * Add menu for order
+ */
+function order_menu()
+{
+  $item = array();
+  $item['order/add'] = array(
+    'title' => t('Add invoice'),
+    'access arguments' => array('order:*:add'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('order_add_form', 2),
+    'file' => 'includes/order.page.inc',
+    'type' => MENU_LOCAL_ACTION
+  );
+  $item['app/order/debt/%order'] = array(
+    'title' => t('Debt settlement'),
+    'access arguments' => array('order:*:add'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('order_debt_form', 3),
+    'file' => 'includes/order.page.inc',
+    'type' => MENU_LOCAL_ACTION
+  );
+  $item['order/edit/%order'] = array(
+    'title' => t('Update invoice'),
+    'access arguments' => array('order:*:edit'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('order_add_form', 2),
+    'file' => 'includes/order.page.inc',
+    'type' => MENU_LOCAL_ACTION
+  );
+
+  $item['order/delete/%order'] = array(
+    'title' => t('Delete invoice'),
+    'access arguments' => array('order:*:delete'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('order_delete_form', 2),
+    'file' => 'includes/order.page.inc',
+    'type' => MENU_LOCAL_ACTION
+  );
+  return $item;
+}
+
+/**
+ * Implement hook_views_api
+ * @return array
+ */
+function order_views_api()
+{
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'order') . '/includes/views',
+  );
+}
+
+/**
+ * @param $id
+ * @return mixedImplement hook_entity_load
+ * Order_load
+ */
+function order_load($id)
+{
+  $entity = order_load_multiple(array($id));
+  return reset($entity);
+}
+
+/**
+ * Implements cook table Load Multiple
+ * @Param $ids = array();
+ */
+function order_load_multiple($ids)
+{
+  return entity_load('order', $ids);
+}
+
+/**
+ * Implements cook table Create
+ */
+function order_create($entity)
+{
+  return entity_save('order', $entity);
+}
+
+/**
+ * Implements cook table Cupdate
+ */
+function order_save($entity)
+{
+  return entity_save('order', $entity);
+}
+
+/**
+ * @param $ids
+ * @param $conditions
+ * @return mixed
+ * Implements load cook table with condition
+ */
+function order_load_multiple_with_conditions($ids, $conditions)
+{
+  return entity_load('order', $ids, $conditions);
+}
+
+/**
+ * Implements order delete
+ */
+function order_delete($id)
+{
+  return entity_delete('order', $id);
+}
+
+/**
+ * Implements hook_permission().
+ */
+function order_permission()
+{
+  return array(
+    'order:*:add' => array(
+      'title' => t('Add invoice'),
+    ),
+    'order:*:edit' => array(
+      'title' => t('Update invoice'),
+    ),
+    'order:*:delete' => array(
+      'title' => t('Delete invoice'),
+    ),
+
+    'order:*:manage' => array(
+      'title' => t('Invoice Management'),
+    ),
+  );
+}
+
+/**
+ * Implement check exit cook table
+ */
+function order_get_order($field, $value)
+{
+  $query = db_select('order', 'd');
+  $query->fields('d');
+  $query->condition($field, $value, '=');
+  $result = $query->execute()->fetchAll();
+  if ($result) {
+    return $result;
+  } else {
+    return false;
+  }
+}
+
+
+/**
+ * Get total amnount by order
+ */
+function order_get_total_amount($orders){
+  $total = 0;
+  if($orders){
+    foreach($orders as $order){
+      $total += $order->orders_total_all_amount;
+    }
+  }
+  return number_format($total).' INR';
+}

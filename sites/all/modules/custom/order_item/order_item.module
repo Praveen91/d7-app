@@ -1,0 +1,81 @@
+<?php
+
+/**
+ * Implement hook_entity
+ */
+
+function order_item_entity_info()
+{
+  return array(
+    'order_item' => array(
+      "label" => "order_item",
+      "base table" => "order_item",
+      'controller class' => 'OrderItemController',
+      "fieldable" => false,
+      'entity keys' => array(
+        'id' => 'id',
+      ),
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full content'),
+          'custom settings' => TRUE
+        )
+      )
+    )
+  );
+}
+
+/**
+ * @param $id
+ * @return mixedImplement hook_entity_load
+ * order_item_load
+ */
+function order_item_load($id)
+{
+  $entity = order_item_load_multiple(array($id));
+  return reset($entity);
+}
+
+/**
+ * Implements cook table Load Multiple
+ * @Param $ids = array();
+ */
+function order_item_load_multiple($ids)
+{
+  return entity_load('order_item', $ids);
+}
+
+/**
+ * Implements cook table Create
+ */
+function order_item_create($entity)
+{
+  return entity_save('order_item', $entity);
+}
+
+/**
+ * Implements cook table Cupdate
+ */
+function order_item_save($entity)
+{
+  return entity_save('order_item', $entity);
+}
+
+/**
+ * @param $ids
+ * @param $conditions
+ * @return mixed
+ * Implements load cook table with condition
+ */
+function order_item_load_multiple_with_conditions($ids, $conditions)
+{
+  return entity_load('order_item', $ids, $conditions);
+}
+
+/**
+ * Implements order_item delete
+ */
+function order_item_delete($id)
+{
+  return entity_delete('order_item', $id);
+}

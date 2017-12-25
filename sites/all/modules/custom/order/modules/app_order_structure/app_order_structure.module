@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the App Order Structure feature.
+ */
+
+include_once 'app_order_structure.features.inc';

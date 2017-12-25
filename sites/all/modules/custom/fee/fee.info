@@ -1,0 +1,8 @@
+name = Fee manager
+description = Aplication software for billing
+package = fee
+core = 7.x
+project = "App"
+
+files[] = includes/fee.controller.inc
+files[] = includes/fee.views_controller.inc

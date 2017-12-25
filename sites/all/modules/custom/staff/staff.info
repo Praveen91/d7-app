@@ -1,0 +1,8 @@
+name = Staff billing
+description = Aplication software for billing
+core = 7.x
+project = "App"
+package = Billing
+dependencies[] = date_popup
+files[] = includes/staff.controller.inc
+files[] = includes/staff.view_controller.inc

@@ -1,102 +1,103 @@
 <?php
-
 /**
  * Implements hook_schema().
  */
-function stock_schema() {
-  $schema['stock_out'] = array(
+function order_item_schema()
+{
+  $schema = array();
+  $schema['order_item'] = array(
     'fields' => array(
       'id' => array(
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'size' => 'big',
-       ),
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'default' => '',
+      ),
       'uid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
-       ),
-      'cook_table' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-       ),
+      ),
       'order_id' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
-       ),
-      'qty' => array(
-        'type' => 'numeric',
-        'unsigned' => TRUE,
-        'not null' => FALSE,
-        'default' => 0,
-        'precision' => 10,
-        'scale' => 0,
-       ),
-      'status' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-       ),
-      'created' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-       ),
       ),
-    'indexes' => array(
-      'id' => array('id'),
-      ),
-    'primary key' => array('id'),
-  );
-
-  $schema['stock_in'] = array(
-    'fields' => array(
-      'id' => array(
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'size' => 'big',
-       ),
-      'uid' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-       ),
       'cook_table' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
-       ),
-      'qty' => array(
+      ),
+      'table_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'other_item' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'default' => '',
+      ),
+      'other_amount' => array(
         'type' => 'numeric',
         'unsigned' => TRUE,
         'not null' => FALSE,
-        'default' => 0,
         'precision' => 10,
         'scale' => 0,
-       ),
+        'default' => 0,
+      ),
+      'amount' => array(
+        'type' => 'numeric',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'precision' => 10,
+        'scale' => 0,
+        'default' => 0,
+      ),
+      'quantity' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'total_amount' => array(
+        'type' => 'numeric',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'precision' => 10,
+        'scale' => 0,
+        'default' => 0,
+      ),
       'status' => array(
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
-       ),
+      ),
       'created' => array(
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
-       ),
       ),
+      'changed' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
     'indexes' => array(
       'id' => array('id'),
-      ),
+    ),
     'primary key' => array('id'),
   );
   return $schema;

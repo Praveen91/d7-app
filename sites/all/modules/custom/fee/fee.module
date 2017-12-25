@@ -1,0 +1,257 @@
+<?php
+
+/**
+ * Implement hook_entity
+ */
+
+function fee_entity_info()
+{
+  return array(
+    'fee' => array(
+      "label" => "Fee",
+      "base table" => "fee",
+      'controller class' => 'FeeController',
+      "fieldable" => false,
+      'entity keys' => array(
+        'id' => 'id',
+      ),
+      'views controller class' => 'FeeViewsController',
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full content'),
+          'custom settings' => TRUE
+        )
+      )
+    )
+  );
+}
+
+
+/**
+ * Implements hook_menu().
+ * Add menu for order
+ */
+function fee_menu()
+{
+  $item = array();
+  $item['fee/add'] = array(
+    'title' => t('Add extra cost'),
+    'access arguments' => array('fee:*:add'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fee_add_form', 2),
+    'file' => 'includes/fee.page.inc',
+    'type' => MENU_LOCAL_ACTION
+  );
+  $item['fee/day/manager'] = array(
+    'title' => t('Revenue and expenditure management'),
+    'access arguments' => array('fee:*:manager'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fee_manager_form'),
+    'file' => 'includes/fee.page.inc',
+    'type' => MENU_LOCAL_ACTION
+  );
+  $item['fee/delete/%fee'] = array(
+    'title' => t('Delete costs'),
+    'access arguments' => array('fee:*:delete'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('fee_delete_form', 2),
+    'file' => 'includes/fee.page.inc',
+    'type' => MENU_LOCAL_ACTION
+  );
+  return $item;
+}
+
+/**
+ * @param $id
+ * @return mixedImplement hook_entity_load
+ * Order_load
+ */
+function fee_load($id)
+{
+  $entity = fee_load_multiple(array($id));
+  return reset($entity);
+}
+
+/**
+ * Implements cook table Load Multiple
+ * @Param $ids = array();
+ */
+function fee_load_multiple($ids)
+{
+  return entity_load('fee', $ids);
+}
+
+/**
+ * Implements cook table Create
+ */
+function fee_create($entity)
+{
+  return entity_save('fee', $entity);
+}
+
+/**
+ * Implements cook table Cupdate
+ */
+function fee_save($entity)
+{
+  return entity_save('fee', $entity);
+}
+
+/**
+ * @param $ids
+ * @param $conditions
+ * @return mixed
+ * Implements load cook table with condition
+ */
+function fee_load_multiple_with_conditions($ids, $conditions)
+{
+  return entity_load('fee', $ids, $conditions);
+}
+
+/**
+ * Implements order delete
+ */
+function fee_delete($id)
+{
+  return entity_delete('fee', $id);
+}
+
+/**
+ * Implements hook_permission().
+ */
+function fee_permission()
+{
+  return array(
+    'fee:*:add' => array(
+      'title' => t('Add extra cost'),
+    ),
+    'fee:*:delete' => array(
+      'title' => t('Delete costs'),
+    ),
+    'fee:*:manager' => array(
+      'title' => t('Revenue and expenditure management'),
+    ),
+  );
+}
+
+
+/**
+ * Implement hook_theme()
+ * theme for app
+ */
+function fee_theme(){
+  $module_path = drupal_get_path('module', 'fee');
+  return array(
+    'fee_fun' => array(
+      'template' => 'fee-fun',
+      'path' => $module_path.'/theme',
+    ),
+    'fee_fee' => array(
+      'template' => 'fee-fee',
+      'path' => $module_path.'/theme',
+    ),
+
+  );
+}
+/**
+ * Implement check exit cook table
+ */
+function fee_get_fee($field, $value)
+{
+  $query = db_select('fee', 'd');
+  $query->fields('d');
+  $query->condition($field, $value, '=');
+  $result = $query->execute()->fetchAll();
+  if ($result) {
+    return $result;
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Implement hook_page_alter
+ */
+function fee_page_alter(&$page){
+  if($_GET['q']=='app/fee/manager'){
+    $page['content']['add_fee'] = array(
+      '#weight' => 100,
+      '#markup' => ' <ul class="action-links"><li><a href="/fee/add">Thêm Chi phí</a></li></ul>',
+    );
+  }
+
+}
+
+/**
+ * get doanh thu trong ngay
+ */
+function fee_get_total_fun($from = null, $to = null){
+  $query = db_select('orders','od');
+  $query->fields('od');
+
+  if($from && $to){
+    $query->condition('created',array($from, $to), 'BETWEEN');
+  }elseif($from && !$to){
+    $to = strtotime(date('Y-m-d').' 23:59:59');
+    $query->condition('created',array($from, $to), 'BETWEEN');
+  }elseif($to && !$from){
+    $to = strtotime(date('Y-m-d').' 23:59:59');
+    $query->condition('created',$to, '<=');
+  }else{
+    $from = strtotime(date('Y-m-d').' 00:00:00');
+    $to = strtotime(date('Y-m-d').' 23:59:59');
+    $query->condition('created',array($from, $to), 'BETWEEN');
+  }
+  $query->condition('status',1,'=');
+  $result = $query->execute()->fetchAll();
+  $return = array();
+  $return['total'] = 0;
+  $return['orders'] = array();
+  if($result){
+    foreach($result as $o){
+      $order = order_load($o->id);
+      $return['orders'][$o->id] = $order;
+      $return['total'] += $order->total_all_amount;
+    }
+
+  }
+  return $return;
+}
+
+/**
+ * @param null $from
+ * @param null $to
+ * @return array
+ */
+function fee_get_fee_fun($from = null, $to = null){
+  $query = db_select('fee','fe');
+  $query->fields('fe');
+
+  if($from && $to){
+    $query->condition('fee_date',array($from, $to), 'BETWEEN');
+  }elseif($from && !$to){
+    $to = strtotime(date('Y-m-d').' 23:59:59');
+    $query->condition('fee_date',array($from, $to), 'BETWEEN');
+  }elseif($to && !$from){
+    $to = strtotime(date('Y-m-d').' 23:59:59');
+    $query->condition('fee_date',$to, '<=');
+  }else{
+    $from = strtotime(date('Y-m-d').' 00:00:00');
+    $to = strtotime(date('Y-m-d').' 23:59:59');
+    $query->condition('fee_date',array($from, $to), 'BETWEEN');
+  }
+  $result = $query->execute()->fetchAll();
+  $return = array();
+  $return['total'] = 0;
+  $return['fees'] = array();
+  $fees = array();
+  if($result){
+    foreach($result as $fe){
+      $fee = fee_load($fe->id);
+      $fees[] = $fee;
+      $return['total'] += $fee->fee_total;
+    }
+   $return['fees'] = $fees;
+  }
+  return $return;
+}

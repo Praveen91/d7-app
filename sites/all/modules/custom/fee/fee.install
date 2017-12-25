@@ -1,0 +1,58 @@
+<?php
+/**
+ * Implements hook_schema().
+ */
+function fee_schema()
+{
+  $schema = array();
+  $schema['fee'] = array(
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'size' => 'big',
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'fee_total' => array(
+        'type' => 'numeric',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'precision' => 10,
+        'scale' => 0,
+        'default' => 0,
+      ),
+      'fee_date' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'reason' => array(
+        'type' => 'varchar',
+        'length' => 500,
+        'not null' => FALSE,
+        'default' => '',
+      ),
+
+      'created' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'id' => array('id'),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}

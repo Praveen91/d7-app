@@ -1,5 +1,8 @@
 name = Stock Manager
-description = Apliction software for billing
+description = Aplication software for billing
 core = 7.x
 package = Billing
 project = "App"
+
+files[] = includes/stock.controller.inc
+files[] = includes/stock.views_controller.inc
