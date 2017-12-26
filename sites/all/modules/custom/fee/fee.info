@@ -1,6 +1,6 @@
 name = Fee manager
 description = Aplication software for billing
-package = fee
+package = Billing
 core = 7.x
 project = "App"
 

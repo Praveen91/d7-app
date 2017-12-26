@@ -1,0 +1,7 @@
+name = App Billing
+description = Aplication software for billing
+core = 7.x
+package = Billing
+project = "App"
+
+files[] = includes/app.pages.inc

@@ -89,10 +89,10 @@ if (isset($form_state['cook_table']) && !empty($form_state['cook_table'])) {
     $entity->stock = !empty($form_state['values']['stock']) ? $form_state['values']['price'] : 0;
     $entity->changed = $form_state['values']['changed'];
     if (cook_table_save($entity)) {
-      drupal_set_message(t('Menu' .$form_state['values']['cook_name']. ' has been updated successfully.'), 'status');
+      drupal_set_message(t('Menu ' .$form_state['values']['cook_name']. ' has been updated successfully.'), 'status');
        $form_state['redirect'] = 'app/cook-table/manager';
     } else {
-      drupal_set_message(t('Menu' .$form_state['values']['cook_name']. ' Not updated successfully. Please try again.') , 'error');
+      drupal_set_message(t('Menu ' .$form_state['values']['cook_name']. ' Not updated successfully. Please try again.') , 'error');
     }
 
 } else {

@@ -1,0 +1,666 @@
+<?php
+
+/**
+ * Implement hook_init()
+ */
+function app_init(){
+  $module_path = drupal_get_path('module', 'app');
+  drupal_add_js($module_path . '/js/app.js', array('scope'=>'footer'));
+  drupal_add_css($module_path . '/css/app.css');
+}
+/**
+ * Implements hook_menu().
+ * Add menu for app
+ */
+function app_menu()
+{
+  $item = array();
+  $item['ajax/app/temp/order/%tables'] = array(
+    'page callback' => 'app_add_temp_order',
+    'page arguments' => array(4),
+    'access callback' => true,
+    'type' => MENU_CALLBACK
+  );
+  $item['ajax/app/delete/order-item/%order_item'] = array(
+    'page callback' => 'app_delete_temp_order_item',
+    'page arguments' => array(4),
+    'access callback' => true,
+    'type' => MENU_CALLBACK
+  );
+  $item['ajax/app/delete/order/%order'] = array(
+    'page callback' => 'app_delete_temp_order',
+    'page arguments' => array(4),
+    'access callback' => true,
+    'type' => MENU_CALLBACK
+  );
+  $item['app/table/change/%tables/%ctools_js'] = array(
+    'page callback' => 'app_change_table',
+    'page arguments' => array(3,4),
+    'access callback' => TRUE,
+    'file'=>'includes/app.pages.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $item['app/hour/change/%tables/%ctools_js'] = array(
+    'page callback' => 'app_change_hour',
+    'page arguments' => array(3,4),
+    'access callback' => TRUE,
+    'file'=>'includes/app.pages.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $item['app/food/add/%tables/%ctools_js'] = array(
+    'page callback' => 'app_food_add',
+    'page arguments' => array(3,4),
+    'access callback' => TRUE,
+    'file'=>'includes/app.pages.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $item['app/order/bill/%tables/%ctools_js'] = array(
+    'page callback' => 'app_order_bill',
+    'page arguments' => array(3,4),
+    'access callback' => TRUE,
+    'file'=>'includes/app.pages.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $item['app/print/%order'] = array(
+    'page callback' => 'app_print_view',
+    'page arguments' => array(2),
+    'access callback' => true,
+    'file'=>'includes/app.pages.inc',
+    'type' => MENU_CALLBACK
+  );
+  $item['app/setting'] = array(
+    'title' => 'Update information',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('app_setting_form'),
+    'access arguments' => array('app:*:manager'),
+    'file'=>'includes/app.admin.inc',
+    'type' => MENU_LOCAL_ACTION
+  );
+  $item['app/frontpage'] = array(
+    'title' => 'Dashboard',
+    'page callback' => 'app_frontpage',
+    'access callback' => true,
+    'file'=>'includes/app.pages.inc',
+    'type' => MENU_LOCAL_ACTION
+  );
+
+  return $item;
+}
+/**
+ * Implements hook_permission().
+ * Set permission for app
+ */
+function app_permission()
+{
+  return array(
+    'app:*:manager' => array(
+      'title' => t('App manager'),
+    ),
+  );
+}
+
+/**
+ * Implement hook_theme()
+ * theme for app
+ */
+function app_theme(){
+  $module_path = drupal_get_path('module', 'app');
+  return array(
+    'app_table' => array(
+      'template' => 'app-table-list',
+      'path' => $module_path.'/theme',
+    ),
+    'app_cook_table' => array(
+      'template' => 'app-cook-table-list',
+      'path' => $module_path.'/theme',
+    ),
+    'app_order_billing' => array(
+      'template' => 'app-order-billing',
+      'path' => $module_path.'/theme',
+    ),
+    'app_print_order' => array(
+      'template' => 'app-print-bill',
+      'path' => $module_path.'/theme',
+    ),
+    'app_print_review' => array(
+      'template' => 'app-print-review',
+      'path' => $module_path.'/theme',
+    ),
+  );
+}
+/**
+ * Implement hook_block_info
+ * add block show list table in the homepage
+ */
+function app_block_info() {
+  $blocks['app_table'] = array(
+    'info' => t('Table list'),
+  );
+  $blocks['app_user'] = array(
+    'info' => t('User account'),
+  );
+  $blocks['app_info'] = array(
+    'info' => t('App info'),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ * Show block list table
+ */
+function app_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'app_table':
+      $block['subject'] = t('Table list');
+      $block['content'] = app_table_list_block();
+      break;
+    case 'app_user':
+      $block['content'] = app_user_account();
+      break;
+    case 'app_info':
+      $block['content'] = app_app_info();
+      break;
+  }
+  return $block;
+}
+/**
+ * Implement Get list table and status
+ */
+function app_table_list(){
+ $query = db_select('tables','t');
+  $query->fields('t');
+  $query->orderBy('name','ASC');
+  $result = $query->execute()->fetchAll();
+  if($result){
+    return $result;
+  }else{
+    return false;
+  }
+}
+
+/**
+ * Implement check order is start with table
+ */
+function app_check_table_ready($table){
+  $query = db_select('orders','ord');
+  $query->fields('ord');
+  $query->condition('table_id',$table->id,'=');
+  $query->condition('status',0,'=');
+  $query->range(0,1);
+  $result = $query->execute()->fetchObject();
+  if($result){
+    return order_load($result->id);
+  }else{
+    return false;
+  }
+}
+
+/**
+ * Implement create table list function
+ */
+
+function app_table_list_block(){
+  //add JS
+  ctools_include('modal');
+  ctools_modal_add_js();
+  ctools_add_js('ajax-responder');
+  $tables = app_table_list();
+  if($tables){
+    foreach($tables as $table){
+      $table->order = app_check_table_ready($table);
+      $table->current_amount = number_format(app_get_current_total($table));
+      $table->time_use = app_time_in_use($table);
+    }
+  }
+
+  return theme('app_table',array('tables'=>$tables));
+}
+
+/**
+ * Implement get current total
+ */
+function app_get_current_total($table, $current = null){
+  if(app_check_table_ready($table)){
+    if(empty($current)){
+      $current = time();
+    }
+    $current_time = date('H:i',$current);
+    $current_time = explode(':',$current_time);
+    $hour_current = intval($current_time[0]);
+    $minute_current = intval($current_time[1]);
+    $price = $table->price;
+    $start = date('H:i',$table->order->start);
+    $start = explode(':',$start);
+    $hour_start = intval($start[0]);
+    $minute_start = intval($start[1]);
+    if($minute_current < $minute_start){
+      $minute_current = $minute_current + 60;
+      $hour_current = $hour_current - 1;
+    }
+    if($hour_current < $hour_start){
+      $hour_current = $hour_current + 24;
+    }
+    $hour_use = $hour_current - $hour_start;
+    $minute_use = $minute_current - $minute_start;
+    $time_use = ($hour_use * 60) + $minute_use;
+    $price_use = ($time_use/60) * $price;
+    $price_item = app_get_total_order_item($table);
+    $total = intval($price_use) + $price_item;
+      return $total;
+  }
+  else{
+    return 0;
+  }
+}
+
+/**
+ * Implement get current total
+ */
+function app_get_current_total_per_time($time,$price){
+   $total = 0;
+    $time = explode(':',$time);
+    $time_use = (intval($time[0]) * 60) + intval($time[1]);
+    $price_use = ($time_use/60) * $price;
+    $total = intval($price_use);
+    return $total;
+
+}
+
+/**
+ * Implement get time in use
+ */
+function app_time_in_use($table, $current=null){
+  if(app_check_table_ready($table)){
+    if(empty($current)){
+      $current = time();
+    }
+    $current_time = date('H:i',$current);
+    $current_time = explode(':',$current_time);
+    $hour_current = intval($current_time[0]);
+    $minute_current = intval($current_time[1]);
+    $price = $table->price;
+    $start = date('H:i',$table->order->start);
+    $start = explode(':',$start);
+    $hour_start = intval($start[0]);
+    $minute_start = intval($start[1]);
+    if($minute_current < $minute_start){
+      $minute_current = $minute_current + 60;
+      $hour_current = $hour_current -1;
+    }
+    if($hour_current < $hour_start){
+      $hour_current = $hour_current + 24;
+    }
+    $minute_use = $minute_current - $minute_start;
+    $hour_use = $hour_current - $hour_start;
+
+    $in_use = array($hour_use,$minute_use);
+    $time_in_use = implode(':',$in_use);
+    return $time_in_use;
+  }else{
+    return false;
+  }
+}
+/**
+ * Implement ajax call back table temp order
+ */
+function app_add_temp_order($table){
+  global $user;
+  $order = new stdClass();
+  $order->uid = $user->uid;
+  $order->table_id = $table->id;
+  $order->status = 0;
+  $order->start = time();
+  $order->created = time();
+  $order = entity_save('order',$order);
+  echo '200';
+  exit();
+}
+
+/**
+ * Implement get list table
+ */
+function app_get_table_array($table){
+  $query = db_select('tables','t');
+  $query->fields('t');
+  $query->condition('id',$table->id,'<>');
+  $query->orderBy('name','ASC');
+  $result = $query->execute()->fetchAll();
+  $return = array();
+  if($result){
+    foreach($result as $t){
+      $return[$t->id] = $t->name;
+    }
+  }
+  return $return;
+}
+
+
+
+/**
+ * Implement hook_form
+ * Form change hour
+ */
+function app_food_add_form($form, &$form_state){
+  $table = $form_state['table'];
+  $order = app_check_table_ready($table);
+  $list = app_cook_table_list($table, $order);
+  $form['list'] = array(
+    '#markup'=> render($list),
+  );
+  $form['cook_table'] = array(
+    '#type' => 'checkboxes',
+    '#title' =>t('Select menu'),
+    '#options' => app_get_cook_table_array(),
+    '#suffix'=>'<div class="clearfix"></div>'
+  );
+  $form['quantity'] = array(
+    '#type' => 'textfield',
+    '#title' =>t('Quantity'),
+    '#default_value' => 1,
+
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' =>'Save the menu'
+  );
+  return $form;
+}
+
+/**
+ * Implement hook_form_submit
+ * Form change hour
+ */
+function app_food_add_form_submit($form, &$form_state){
+  global $user;
+  $table = $form_state['table'];
+  $order = app_check_table_ready($table);
+  $cook_table_array = $form_state['values']['cook_table'];
+ foreach($cook_table_array as $cook_table_id){
+   if($cook_table_id > 0){
+     $cook_table = cook_table_load($cook_table_id);
+     $qty = $form_state['values']['quantity'];
+     $order_item = app_load_update_cook_table($table, $order, $cook_table_id);
+     if($order_item){
+       $total_qty = $qty + $order_item->quantity;
+       $order_item->quantity = $total_qty;
+       $order_item->total_amount = $cook_table->price * $total_qty;
+       $order_item->changed = time();
+       $order_items = order_item_save($order_item);
+       app_stock_out($qty, $cook_table, $order);
+
+     }else{
+       //update stock
+       app_stock_out($qty, $cook_table, $order);
+       $order_item = new stdClass();
+       $order_item->uid = $user->uid;
+       $order_item->type = 'cook_table';
+       $order_item->order_id = $order->id;
+       $order_item->cook_table = $cook_table_id;
+       $order_item->table_id = $table->id;
+       $order_item->amount = $cook_table->price;
+       $order_item->quantity = $qty;
+       $order_item->total_amount = $cook_table->price * $qty;
+       $order_item->status = 1;
+       $order_item->created = time();
+       $order_items = order_item_save($order_item);
+     }
+   }
+
+ }
+
+
+  // Tell the browser to close the modal.
+  $new_list = render(app_cook_table_list($table, $order));
+  $form_state['ajax_commands'][] = ajax_command_replace('#table-list-cook-table', $new_list);
+}
+
+/**
+ * Implement get cook table array
+ */
+function app_get_cook_table_array(){
+  $query = db_select('cook_table','c');
+  $query->fields('c');
+  $query->orderBy('name','ASC');
+  $result = $query->execute()->fetchAll();
+  $return = array();
+  if($result){
+    foreach($result as $t){
+      $return[$t->id] = $t->name;
+    }
+  }
+  return $return;
+}
+/**
+ * Implement get total amount in order item
+ */
+function app_get_total_order_item($table, $status = 1){
+  $order = app_check_table_ready($table);
+  $return = 0;
+  if($order){
+    $query = db_select('order_item','item');
+    $query->fields('item');
+    $query->condition('table_id',$table->id,'=');
+    $query->condition('order_id',$order->id,'=');
+    $query->condition('status',$status,'=');
+    $result = $query->execute()->fetchAll();
+    if($result){
+      foreach($result as $t){
+        $return += $t->total_amount;
+      }
+    }
+  }
+  return $return;
+}
+/**
+ * Check order item exist cook table and update
+ */
+function app_load_update_cook_table($table, $order, $cook_table_id, $status = 1){
+
+  $query = db_select('order_item','item');
+  $query->fields('item');
+  $query->condition('table_id',$table->id,'=');
+  $query->condition('order_id',$order->id,'=');
+  $query->condition('cook_table',$cook_table_id,'=');
+  $query->condition('status',$status,'=');
+  $result = $query->execute()->fetchObject();
+  if($result){
+    return order_item_load($result->id);
+  }else{
+    return false;
+  }
+}
+
+/**
+ * List current order item in cook table choose
+ */
+function app_cook_table_list($table, $order, $status = 1){
+  $query = db_select('order_item','item');
+  $query->fields('item');
+  $query->condition('table_id',$table->id,'=');
+  $query->condition('order_id',$order->id,'=');
+  $query->condition('status',$status,'=');
+  $result = $query->execute()->fetchAll();
+  $return =  array();
+  $total = 0;
+    foreach($result as $item){
+      $cook_table = cook_table_load($item->cook_table);
+      $cook_table->order_item_id = $item->id;
+      $cook_table->qty = $item->quantity;
+      $cook_table->total = $item->total_amount;
+      $total +=  $item->total_amount;
+      $return[] = $cook_table;
+    }
+    return theme('app_cook_table',array('cook_tables' => $return, 'total' =>number_format($total),'table'=>$table));
+}
+/**
+ * Implement delete order temp item
+ */
+function app_delete_temp_order_item($order_item){
+  order_item_delete($order_item->id);
+  $table = tables_load($order_item->table_id);
+  $order = app_check_table_ready($table);
+  $new_list = render(app_cook_table_list($table, $order));
+    echo $new_list;
+    exit();
+}
+/**
+ * delete temp order
+ */
+function app_delete_temp_order($order){
+  order_delete($order->id);
+  //delete order item too
+  db_delete('order_item')->condition('order_id',$order->id)->execute();
+}
+/**
+ * Get all order item by table, order
+ */
+function app_get_item_list($table, $order, $status = 1){
+  $query = db_select('order_item','item');
+  $query->fields('item');
+  $query->condition('table_id',$table->id,'=');
+  $query->condition('order_id',$order->id,'=');
+  $result = $query->execute()->fetchAll();
+  $return =  array();
+  if($result){
+    foreach($result as $item){
+      $return[$item->id] = order_item_load($item->id);
+    }
+    return $return;
+  }else{
+    return false;
+  }
+}
+
+/**
+ * User account
+ */
+function app_user_account(){
+  global $user;
+  $output = '';
+  if($user->uid > 0){
+    $output .= '<div class="user-account">Welcome '.$user->name.' | <a href="/user/logout">Sign out</a> | <a href="/user/'.$user->uid.'/edit">Change password</a></div>';
+  }
+
+  return $output;
+}
+
+/**
+ * Function app info
+ */
+function app_app_info(){
+  $output = '';
+  $output .='<div class="app-info">';
+  $output .='<h3>'.variable_get('name').'</h3>';
+  if(variable_get('site_address')){
+    $output .='<p>Address: '.variable_get('site_address').'</p>';
+  }
+
+  if(variable_get('site_email')){
+    $output .='<p>Email: '.variable_get('site_email').'</p>';
+  }
+  if(variable_get('site_phone')){
+    $output .='<p>Phone: '.variable_get('site_phone').'</p>';
+  }
+
+  $output .='</div>';
+  return $output;
+}
+
+
+/**
+ * Stock in
+ */
+function app_stock_in($qty = 0, $cook){
+  global $user;
+  $stock_in = new stdClass();
+  $stock_in->uid = $user->uid;
+  $stock_in->qty = $qty;
+  $stock_in->cook_table = $cook->id;
+  $stock_in->status = 1;
+  $stock_in->created = REQUEST_TIME;
+  stock_save($stock_in, 'stock_in');
+
+  //add to cook_table item
+  $cook->stock = $cook->stock + $qty;
+  cook_table_save($cook);
+}
+
+/**
+ * Stock in
+ */
+function app_stock_out($qty = 0, $cook, $order){
+  global $user;
+//
+  $stock_out = new stdClass();
+  $stock_out->uid = $user->uid;
+  $stock_out->qty = $qty;
+  $stock_out->order_id = $order->id;
+  $stock_out->cook_table = $cook->id;
+  $stock_out->status = 1;
+  $stock_out->created = REQUEST_TIME;
+  stock_save($stock_out, 'stock_out');
+  //remove to cook_table item
+  if($cook->stock > $qty){
+    $cook->stock = $cook->stock - $qty;
+  }
+
+  cook_table_save($cook);
+}
+
+/**
+ * Get stock total by item
+ */
+function app_get_total_stock_out_item($cook, $order = null){
+  $query = db_select('stock_out', 'st');
+  $query->fields('st');
+  $query->condition('cook_table',$cook->id,'=');
+  if($order){
+    $query->condition('order',$order->id,'=');
+  }
+  $result = $query->execute()->fetchAll();
+  $total = 0;
+  if($result){
+    foreach($result as $st){
+      $total += $st->qty;
+    }
+  }
+  return $total;
+}
+/**
+ * Get stock out list by item
+ */
+function app_get_list_stock_out_item($cook, $order = null){
+  $query = db_select('stock_out', 'st');
+  $query->fields('st');
+  $query->condition('cook_table',$cook->id,'=');
+  if($order){
+    $query->condition('order',$order->id,'=');
+  }
+  $result = $query->execute()->fetchAll();
+  $data = array();
+  if($result){
+    foreach($result as $st){
+      $data[]= $st;
+    }
+  }
+  return $data;
+}
+/**
+ * Get stock in list by item
+ */
+function app_get_list_stock_in_item($cook){
+  $query = db_select('stock_in', 'st');
+  $query->fields('st');
+  $query->condition('cook_table',$cook->id,'=');
+  $result = $query->execute()->fetchAll();
+  $data = array();
+  if($result){
+    foreach($result as $st){
+      $data[]= $st;
+    }
+  }
+  return $data;
+}

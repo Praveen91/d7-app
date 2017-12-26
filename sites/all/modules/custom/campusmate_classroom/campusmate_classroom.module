@@ -1,0 +1,83 @@
+<?php
+
+/**
+ * Implements hook_entity_info().
+ */
+function campusmate_classroom_entity_info() {
+
+   $return = array(
+    'classroom' => array(
+      'label' => t('Classroom'),
+      'controller class' => 'ClassroomController',
+      'base table' => 'classroom',
+      'fieldable' => FALSE,
+      'entity keys' => array(
+        'id' => 'id',
+      ),
+      'views controller class' => 'ClassroomViewsController',
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full content'),
+          'custom settings' => TRUE,
+        ),
+      ),
+    ),
+  );
+  return $return;
+}
+
+/**
+ * @param $id
+ * @return mixed
+ * Implement hook_entity_load
+ * classroom_load
+ */
+function classroom_load($id)
+{
+  $entity = classroom_load_multiple(array($id));
+  return reset($entity);
+}
+
+/**
+ * Implements classroom table Load Multiple
+ * @Param $ids = array();
+ */
+function classroom_load_multiple($ids)
+{
+  return entity_load('classroom', $ids);
+}
+
+/**
+ * Implements classroom table Create
+ */
+function classroom_create($entity)
+{
+  return entity_save('classroom', $entity);
+}
+
+/**
+ * Implements classroom table Update
+ */
+function classroom_save($entity)
+{
+  return entity_save('classroom', $entity);
+}
+
+/**
+ * @param $ids
+ * @param $conditions
+ * @return mixed
+ * Implements load classroom table with condition
+ */
+function classroom_load_multiple_with_conditions($ids, $conditions)
+{
+  return entity_load('classroom', $ids, $conditions);
+}
+
+/**
+ * Implements classroom delete
+ */
+function classroom_delete($id)
+{
+  return entity_delete('classroom', $id);
+}

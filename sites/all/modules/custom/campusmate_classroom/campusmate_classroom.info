@@ -1,0 +1,8 @@
+name = Classroom
+description = Cumpusmate Classroom for Student.
+core = 7.x
+package = Cumpusmate
+dependencies[] = entity
+
+files[] = includes/classroom.controller.inc
+files[] = includes/classroom.views_controller.inc

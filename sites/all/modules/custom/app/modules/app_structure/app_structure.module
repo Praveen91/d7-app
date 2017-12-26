@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the App Structure feature.
+ */
+
+include_once 'app_structure.features.inc';

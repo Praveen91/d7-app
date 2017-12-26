@@ -176,7 +176,7 @@ function fee_page_alter(&$page){
   if($_GET['q']=='app/fee/manager'){
     $page['content']['add_fee'] = array(
       '#weight' => 100,
-      '#markup' => ' <ul class="action-links"><li><a href="/fee/add">Thêm Chi phí</a></li></ul>',
+      '#markup' => ' <ul class="action-links"><li><a href="/fee/add">Add Cost</a></li></ul>',
     );
   }
 

@@ -23,6 +23,7 @@ function stock_add_form($form, &$form_state, $entity) {
    '#type' => 'submit',
    '#value' => t('Save Stock')
   ];
+  return $form;
 }
 
 /**

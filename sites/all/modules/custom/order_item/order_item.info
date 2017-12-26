@@ -1,6 +1,6 @@
 name = Order Item Billing
 description = Aplication software for billing
-package = order_item
+package = Billing
 core = 7.x
 project = "App"
 

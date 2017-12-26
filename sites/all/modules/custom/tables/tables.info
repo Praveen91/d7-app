@@ -1,5 +1,5 @@
-name = Tables Billings
-description = Application software for billing
+name = Tables Billing
+description = Aplication software for billing
 core = 7.x
 package = Billing
 project = "App"

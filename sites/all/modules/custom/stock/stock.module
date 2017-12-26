@@ -22,13 +22,11 @@ function stock_entity_info() {
         ),
       ),
     ),
-  );
 
-  $return = array(
-    'stock_in' => array(
+     'stock_in' => array(
       'label' => t('Stock In'),
       'controller class' => 'StockInController',
-      'base table' => 'stock_out',
+      'base table' => 'stock_in',
       'fieldable' => FALSE,
       'entity keys' => array(
         'id' => 'id',
@@ -42,6 +40,8 @@ function stock_entity_info() {
       ),
     ),
   );
+
+
 
   return $return;
 }
@@ -71,7 +71,7 @@ function stock_permission() {
       'title' => t('Enter the warehouse'),
     ),
     'stock:*:manage' => array(
-      'title' => t('Quản lí kho'),
+      'title' => t('Warehouse management'),
     ),
   );
 }
